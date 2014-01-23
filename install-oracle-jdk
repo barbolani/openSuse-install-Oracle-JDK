@@ -1,0 +1,199 @@
+#!/bin/bash
+# Copyright 2014 Alfonso Garcia-Patiño Barbolani (barbolani@gmail.com)
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+#
+# Script to automate the installation of the Oracle Java SDK in OpenSuse 13.1
+#
+# Basically this script follows the instructions found on 
+# http://en.opensuse.org/SDB:Installing_Java automating them so that hopefully
+# next time you have to install Oracle JDK you won't have to copy and 
+# paste long commands this again. 
+#
+# How to use the script:
+#
+#       1- Download the latest Java rpm SDK from http://www.oracle.com 
+#          (choose 32 or 64 bit according to your platform)
+#       2- Install the SDK by command line (sudo zypper install <rpm file>)
+#          or double clicking on the rpm file
+#       3- Edit this script and adjust the variables below to reflect 
+#           - The latest Java version and revision you are installing
+#           - The location of the java installs - In OpenSuse they are 
+#             located in /usr/lib (32 bit) or /usr/lib64 (64 bits)
+#       4- Run this script from a command line
+#
+# Now, you can select the Oracle Java implementation run these commands, choosing the jdk_Oracle option in each
+#
+#	Runtime:            sudo update-alternatives --config java
+#	Compiler:           sudo update-alternatives --config javac
+#	Web browser plugin: sudo update-alternatives --config javaplugin
+#	Exported JARs:	    sudo update-alternatives --config java_sdk_<your java version>
+#
+# These are the variables you need to change according to your Java version
+JAVA_VERSION=1.7.0
+JAVA_REVISION=${JAVA_VERSION}_51
+# Change this to /usr/lib on a 32-bit system
+LIB_FOLDER=/usr/lib64
+
+ORACLE_JAVA=/usr/java/jdk${JAVA_REVISION}
+
+# Compress man pages
+
+for f in ${ORACLE_JAVA}/man/man1/*.1 ; do sudo gzip $(readlink -f $f) ; done ;
+
+# Setup main link
+
+sudo ln -s -T ${ORACLE_JAVA} ${LIB_FOLDER}/jdk_Oracle
+
+# Setup jvm-exports
+
+sudo mkdir ${LIB_FOLDER}/jvm-exports/jdk_Oracle
+cd ${LIB_FOLDER}/jvm-exports/jdk_Oracle
+sudo ln -s ${LIB_FOLDER}/jdk_Oracle/jre/lib/rt.jar jaas-${JAVA_VERSION}_Orac.jar
+sudo ln -s jaas-${JAVA_VERSION}_Orac.jar jaas-${JAVA_VERSION}.jar
+sudo ln -s jaas-${JAVA_VERSION}_Orac.jar jaas.jar
+sudo ln -s ${LIB_FOLDER}/jdk_Oracle/jre/lib/jce.jar jce-${JAVA_VERSION}_Orac.jar
+sudo ln -s jce-${JAVA_VERSION}_Orac.jar jce-${JAVA_VERSION}.jar
+sudo ln -s jce-${JAVA_VERSION}_Orac.jar jce.jar
+sudo ln -s ${LIB_FOLDER}/jdk_Oracle/jre/lib/rt.jar jdbc-stdext-${JAVA_VERSION}_Orac.jar
+sudo ln -s jdbc-stdext-${JAVA_VERSION}_Orac.jar jdbc-stdext-${JAVA_VERSION}.jar
+sudo ln -s jdbc-stdext-${JAVA_VERSION}_Orac.jar jdbc-stdext-3.0.jar
+sudo ln -s jdbc-stdext-${JAVA_VERSION}_Orac.jar jdbc-stdext.jar
+sudo ln -s ${LIB_FOLDER}/jdk_Oracle/jre/lib/rt.jar jndi-${JAVA_VERSION}_Orac.jar
+sudo ln -s jndi-${JAVA_VERSION}_Orac.jar jndi-${JAVA_VERSION}.jar
+sudo ln -s ${LIB_FOLDER}/jdk_Oracle/jre/lib/rt.jar jndi-cos-${JAVA_VERSION}_Orac.jar
+sudo ln -s jndi-cos-${JAVA_VERSION}_Orac.jar jndi-cos-${JAVA_VERSION}.jar
+sudo ln -s jndi-cos-${JAVA_VERSION}_Orac.jar jndi-cos.jar
+sudo ln -s jndi-${JAVA_VERSION}_Orac.jar jndi.jar
+sudo ln -s ${LIB_FOLDER}/jdk_Oracle/jre/lib/rt.jar jndi-ldap-${JAVA_VERSION}_Orac.jar
+sudo ln -s jndi-ldap-${JAVA_VERSION}_Orac.jar jndi-ldap-${JAVA_VERSION}.jar
+sudo ln -s jndi-ldap-${JAVA_VERSION}_Orac.jar jndi-ldap.jar
+sudo ln -s ${LIB_FOLDER}/jdk_Oracle/jre/lib/rt.jar jndi-rmi-${JAVA_VERSION}_Orac.jar
+sudo ln -s jndi-rmi-${JAVA_VERSION}_Orac.jar jndi-rmi-${JAVA_VERSION}.jar
+sudo ln -s jndi-rmi-${JAVA_VERSION}_Orac.jar jndi-rmi.jar
+sudo ln -s ${LIB_FOLDER}/jdk_Oracle/jre/lib/jsse.jar jsse-${JAVA_VERSION}_Orac.jar
+sudo ln -s jsse-${JAVA_VERSION}_Orac.jar jsse-${JAVA_VERSION}.jar
+sudo ln -s jsse-${JAVA_VERSION}_Orac.jar jsse.jar
+sudo ln -s ${LIB_FOLDER}/jdk_Oracle/jre/lib/rt.jar sasl-${JAVA_VERSION}_Orac.jar
+sudo ln -s sasl-${JAVA_VERSION}_Orac.jar sasl-${JAVA_VERSION}.jar
+sudo ln -s sasl-${JAVA_VERSION}_Orac.jar sasl.jar
+
+# Main java
+
+sudo /usr/sbin/update-alternatives --install /usr/bin/java java ${LIB_FOLDER}/jdk_Oracle/bin/java 3 \
+  --slave /usr/share/man/man1/java.1.gz java.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/java.1.gz \
+  --slave ${LIB_FOLDER}/jvm/jre jre ${LIB_FOLDER}/jdk_Oracle/jre \
+  --slave ${LIB_FOLDER}/jvm-exports/jre jre_exports ${LIB_FOLDER}/jvm-exports/jdk_Oracle \
+  --slave /usr/bin/keytool keytool ${LIB_FOLDER}/jdk_Oracle/bin/keytool \
+  --slave /usr/share/man/man1/keytool.1.gz keytool.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/keytool.1.gz \
+  --slave /usr/bin/orbd orbd ${LIB_FOLDER}/jdk_Oracle/bin/orbd \
+  --slave /usr/share/man/man1/orbd.1.gz orbd.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/orbd.1.gz \
+  --slave /usr/bin/policytool policytool ${LIB_FOLDER}/jdk_Oracle/bin/policytool \
+  --slave /usr/share/man/man1/policytool.1.gz policytool.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/policytool.1.gz \
+  --slave /usr/bin/rmid rmid ${LIB_FOLDER}/jdk_Oracle/bin/rmid \
+  --slave /usr/share/man/man1/rmid.1.gz rmid.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/rmid.1.gz \
+  --slave /usr/bin/rmiregistry rmiregistry ${LIB_FOLDER}/jdk_Oracle/bin/rmiregistry \
+  --slave /usr/share/man/man1/rmiregistry.1.gz rmiregistry.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/rmiregistry.1.gz \
+  --slave /usr/bin/servertool servertool ${LIB_FOLDER}/jdk_Oracle/bin/servertool \
+  --slave /usr/share/man/man1/servertool.1.gz servertool.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/servertool.1.gz \
+  --slave /usr/bin/tnameserv tnameserv ${LIB_FOLDER}/jdk_Oracle/bin/tnameserv \
+  --slave /usr/share/man/man1/tnameserv.1.gz tnameserv.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/tnameserv.1.gz
+  
+# Java compiler
+
+sudo /usr/sbin/update-alternatives --install /usr/bin/javac javac ${LIB_FOLDER}/jdk_Oracle/bin/javac 3 \
+  --slave /usr/bin/appletviewer appletviewer ${LIB_FOLDER}/jdk_Oracle/bin/appletviewer \
+  --slave /usr/share/man/man1/appletviewer.1.gz appletviewer.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/appletviewer.1.gz \
+  --slave /usr/bin/apt apt ${LIB_FOLDER}/jdk_Oracle/bin/apt \
+  --slave /usr/share/man/man1/apt.1.gz apt.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/apt.1.gz \
+  --slave /usr/bin/extcheck extcheck ${LIB_FOLDER}/jdk_Oracle/bin/extcheck \
+  --slave /usr/share/man/man1/extcheck.1.gz extcheck.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/extcheck.1.gz \
+  --slave /usr/bin/jar jar ${LIB_FOLDER}/jdk_Oracle/bin/jar \
+  --slave /usr/share/man/man1/jar.1.gz jar.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/jar.1.gz \
+  --slave /usr/bin/jarsigner jarsigner ${LIB_FOLDER}/jdk_Oracle/bin/jarsigner \
+  --slave /usr/share/man/man1/jarsigner.1.gz jarsigner.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/jarsigner.1.gz \
+  --slave ${LIB_FOLDER}/jvm/java java_sdk ${LIB_FOLDER}/jdk_Oracle \
+  --slave ${LIB_FOLDER}/jvm-exports/java java_sdk_exports ${LIB_FOLDER}/jvm-exports/jdk_Oracle \
+  --slave /usr/share/man/man1/javac.1.gz javac.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/javac.1.gz \
+  --slave /usr/bin/javadoc javadoc ${LIB_FOLDER}/jdk_Oracle/bin/javadoc \
+  --slave /usr/share/man/man1/javadoc.1.gz javadoc.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/javadoc.1.gz \
+  --slave /usr/bin/javah javah ${LIB_FOLDER}/jdk_Oracle/bin/javah \
+  --slave /usr/share/man/man1/javah.1.gz javah.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/javah.1.gz \
+  --slave /usr/bin/javap javap ${LIB_FOLDER}/jdk_Oracle/bin/javap \
+  --slave /usr/share/man/man1/javap.1.gz javap.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/javap.1.gz \
+  --slave /usr/share/man/man1/jcmd.1.gz jcmd.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/jcmd.1.gz \
+  --slave /usr/bin/jconsole jconsole ${LIB_FOLDER}/jdk_Oracle/bin/jconsole \
+  --slave /usr/share/man/man1/jconsole.1.gz jconsole.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/jconsole.1.gz \
+  --slave /usr/bin/jdb jdb ${LIB_FOLDER}/jdk_Oracle/bin/jdb \
+  --slave /usr/share/man/man1/jdb.1.gz jdb.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/jdb.1.gz \
+  --slave /usr/bin/jhat jhat ${LIB_FOLDER}/jdk_Oracle/bin/jhat \
+  --slave /usr/share/man/man1/jhat.1.gz jhat.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/jhat.1.gz \
+  --slave /usr/bin/jinfo jinfo ${LIB_FOLDER}/jdk_Oracle/bin/jinfo \
+  --slave /usr/share/man/man1/jinfo.1.gz jinfo.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/jinfo.1.gz \
+  --slave /usr/bin/jmap jmap ${LIB_FOLDER}/jdk_Oracle/bin/jmap \
+  --slave /usr/share/man/man1/jmap.1.gz jmap.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/jmap.1.gz \
+  --slave /usr/bin/jps jps ${LIB_FOLDER}/jdk_Oracle/bin/jps \
+  --slave /usr/share/man/man1/jps.1.gz jps.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/jps.1.gz \
+  --slave /usr/bin/jrunscript jrunscript ${LIB_FOLDER}/jdk_Oracle/bin/jrunscript \
+  --slave /usr/share/man/man1/jrunscript.1.gz jrunscript.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/jrunscript.1.gz \
+  --slave /usr/bin/jsadebugd jsadebugd ${LIB_FOLDER}/jdk_Oracle/bin/jsadebugd \
+  --slave /usr/share/man/man1/jsadebugd.1.gz jsadebugd.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/jsadebugd.1.gz \
+  --slave /usr/bin/jstack jstack ${LIB_FOLDER}/jdk_Oracle/bin/jstack \
+  --slave /usr/share/man/man1/jstack.1.gz jstack.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/jstack.1.gz \
+  --slave /usr/bin/jstat jstat ${LIB_FOLDER}/jdk_Oracle/bin/jstat \
+  --slave /usr/share/man/man1/jstat.1.gz jstat.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/jstat.1.gz \
+  --slave /usr/bin/jstatd jstatd ${LIB_FOLDER}/jdk_Oracle/bin/jstatd \
+  --slave /usr/share/man/man1/jstatd.1.gz jstatd.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/jstatd.1.gz \
+  --slave /usr/bin/native2ascii native2ascii ${LIB_FOLDER}/jdk_Oracle/bin/native2ascii \
+  --slave /usr/share/man/man1/native2ascii.1.gz native2ascii.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/native2ascii.1.gz \
+  --slave /usr/bin/pack200 pack200 ${LIB_FOLDER}/jdk_Oracle/bin/pack200 \
+  --slave /usr/share/man/man1/pack200.1.gz pack200.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/pack200.1.gz \
+  --slave /usr/bin/rmic rmic ${LIB_FOLDER}/jdk_Oracle/bin/rmic \
+  --slave /usr/share/man/man1/rmic.1.gz rmic.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/rmic.1.gz \
+  --slave /usr/bin/schemagen schemagen ${LIB_FOLDER}/jdk_Oracle/bin/schemagen \
+  --slave /usr/share/man/man1/schemagen.1.gz schemagen.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/schemagen.1.gz \
+  --slave /usr/bin/serialver serialver ${LIB_FOLDER}/jdk_Oracle/bin/serialver \
+  --slave /usr/share/man/man1/serialver.1.gz serialver.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/serialver.1.gz \
+  --slave /usr/bin/unpack200 unpack200 ${LIB_FOLDER}/jdk_Oracle/bin/unpack200 \
+  --slave /usr/share/man/man1/unpack200.1.gz unpack200.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/unpack200.1.gz \
+  --slave /usr/bin/wsgen wsgen ${LIB_FOLDER}/jdk_Oracle/bin/wsgen \
+  --slave /usr/share/man/man1/wsgen.1.gz wsgen.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/wsgen.1.gz \
+  --slave /usr/bin/wsimport wsimport ${LIB_FOLDER}/jdk_Oracle/bin/wsimport \
+  --slave /usr/share/man/man1/wsimport.1.gz wsimport.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/wsimport.1.gz \
+  --slave /usr/bin/xjc xjc ${LIB_FOLDER}/jdk_Oracle/bin/xjc \
+  --slave /usr/share/man/man1/xjc.1.gz xjc.1.gz ${LIB_FOLDER}/jdk_Oracle/man/man1/xjc.1.gz  
+
+# Web browser plugin
+
+sudo /usr/sbin/update-alternatives --install ${LIB_FOLDER}/browser-plugins/javaplugin.so javaplugin ${LIB_FOLDER}/jdk_Oracle/jre/lib/amd64/libnpjp2.so 3 \
+  --slave /usr/bin/javaws javaws ${LIB_FOLDER}/jdk_Oracle/jre/bin/javaws \
+  --slave /usr/share/man/man1/javaws.1 javaws.1 ${LIB_FOLDER}/jdk_Oracle/man/man1/javaws.1.gz
+  
+# Java application launcher
+
+sudo /usr/sbin/update-alternatives --install /usr/lib64/jvm/jre-${JAVA_VERSION} jre_${JAVA_VERSION} /usr/lib64/jdk_Oracle/jre 3  \
+  --slave /usr/lib64/jvm-exports/jre-${JAVA_VERSION} jre_${JAVA_VERSION}_exports /usr/lib64/jvm-exports/jdk_Oracle
+
+# Exported JARs
+  
+sudo /usr/sbin/update-alternatives --install ${LIB_FOLDER}/jvm/java-${JAVA_VERSION} java_sdk_${JAVA_VERSION} ${LIB_FOLDER}/jdk_Oracle 3 \
+  --slave ${LIB_FOLDER}/jvm-exports/java-${JAVA_VERSION} java_sdk_${JAVA_VERSION}_exports ${LIB_FOLDER}/jvm-exports/jdk_Oracle
+  
+# Control panel
+
+sudo ln -s ${LIB_FOLDER}/jdk_Oracle/jre/bin/jcontrol /usr/bin/
+sudo ln -s ${LIB_FOLDER}/jdk_Oracle/jre/lib/desktop/icons/hicolor/16x16/apps/sun-jcontrol.png /usr/share/icons/hicolor/16x16/apps/
+sudo ln -s ${LIB_FOLDER}/jdk_Oracle/jre/lib/desktop/icons/hicolor/48x48/apps/sun-jcontrol.png /usr/share/icons/hicolor/48x48/apps/
+sudo ln -s ${LIB_FOLDER}/jdk_Oracle/jre/lib/desktop/icons/LowContrast/16x16/apps/sun-jcontrol.png /usr/share/icons/locolor/16x16/apps/
+sudo ln -s ${LIB_FOLDER}/jdk_Oracle/jre/lib/desktop/icons/LowContrast/48x48/apps/sun-jcontrol.png /usr/share/icons/locolor/48x48/apps/
+sudo ln -s ${LIB_FOLDER}/jdk_Oracle/jre/lib/desktop/applications/sun_java.desktop /usr/share/applications
