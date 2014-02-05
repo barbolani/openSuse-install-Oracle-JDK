@@ -30,6 +30,7 @@
 #           - The latest Java version and revision you are installing
 #           - The location of the java installs - In OpenSuse they are 
 #             located in /usr/lib (32 bit) or /usr/lib64 (64 bits)
+#           - The architecture used i386 (32 bit) or amd64 (64 bit)
 #       4- Run this script from a command line
 #
 # Now, you can select the Oracle Java implementation run these commands, choosing the jdk_Oracle option in each
@@ -43,7 +44,8 @@
 JAVA_VERSION=1.7.0
 JAVA_REVISION=${JAVA_VERSION}_51
 # Change this to /usr/lib on a 32-bit system
-LIB_FOLDER=/usr/lib64
+LIB_FOLDER=/usr/lib
+ARCHITECTURE=i386
 
 ORACLE_JAVA=/usr/java/jdk${JAVA_REVISION}
 
@@ -175,14 +177,14 @@ sudo /usr/sbin/update-alternatives --install /usr/bin/javac javac ${LIB_FOLDER}/
 
 # Web browser plugin
 
-sudo /usr/sbin/update-alternatives --install ${LIB_FOLDER}/browser-plugins/javaplugin.so javaplugin ${LIB_FOLDER}/jdk_Oracle/jre/lib/amd64/libnpjp2.so 3 \
+sudo /usr/sbin/update-alternatives --install ${LIB_FOLDER}/browser-plugins/javaplugin.so javaplugin ${LIB_FOLDER}/jdk_Oracle/jre/lib/${ARCHITECTURE}/libnpjp2.so 3 \
   --slave /usr/bin/javaws javaws ${LIB_FOLDER}/jdk_Oracle/jre/bin/javaws \
   --slave /usr/share/man/man1/javaws.1 javaws.1 ${LIB_FOLDER}/jdk_Oracle/man/man1/javaws.1.gz
   
 # Java application launcher
 
-sudo /usr/sbin/update-alternatives --install /usr/lib64/jvm/jre-${JAVA_VERSION} jre_${JAVA_VERSION} /usr/lib64/jdk_Oracle/jre 3  \
-  --slave /usr/lib64/jvm-exports/jre-${JAVA_VERSION} jre_${JAVA_VERSION}_exports /usr/lib64/jvm-exports/jdk_Oracle
+sudo /usr/sbin/update-alternatives --install ${LIB_FOLDER}/jvm/jre-${JAVA_VERSION} jre_${JAVA_VERSION} ${LIB_FOLDER}/jdk_Oracle/jre 3  \
+  --slave ${LIB_FOLDER}/jvm-exports/jre-${JAVA_VERSION} jre_${JAVA_VERSION}_exports ${LIB_FOLDER}/jvm-exports/jdk_Oracle
 
 # Exported JARs
   
