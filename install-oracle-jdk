@@ -18,7 +18,7 @@
 # Basically this script follows the instructions found on 
 # http://en.opensuse.org/SDB:Installing_Java automating them so that hopefully
 # next time you have to install Oracle JDK you won't have to copy and 
-# paste long commands this again. 
+# paste long commands like these again. 
 #
 # How to use the script:
 #
